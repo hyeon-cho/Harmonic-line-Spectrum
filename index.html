@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="title"
+    content="Recurrent Sinusoidal INRs for Efficient High-Fidelity Representation: Harmonic-line Spectrum Perspective">
+  <meta name="description"
+    content="A recurrent, weight-tied sinusoidal INR that iteratively refines a latent state under a fixed parameter budget. A harmonic line-spectrum view explains why recurrent unrolling enriches effective spectral support without adding parameters.">
+  <meta name="keywords"
+    content="implicit neural representation, INR, recurrent network, sinusoidal activation, SIREN, harmonic line-spectrum, spectral support, Jacobi-Anger, ECCV 2026">
+  <meta name="author" content="Hyunmin Cho, Jaejun Yoo, Kyong Hwan Jin">
+  <meta name="robots" content="index, follow">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Recurrent Sinusoidal INR — Project Page">
+  <meta property="og:title"
+    content="Recurrent Sinusoidal INRs for Efficient High-Fidelity Representation: Harmonic-line Spectrum Perspective">
+  <meta property="og:description"
+    content="Iterative latent refinement with a shared sinusoidal block. Recurrence enriches the harmonic line-spectrum under a fixed parameter budget.">
+  <meta property="og:image" content="static/images/pipeline.png">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Recurrent Sinusoidal INR — Harmonic-line Spectrum Perspective">
+  <meta name="twitter:description"
+    content="A recurrent sinusoidal INR that enriches effective spectral support without adding parameters.">
+  <meta name="twitter:image" content="static/images/pipeline.png">
+
+  <meta name="citation_title"
+    content="Recurrent Sinusoidal INRs for Efficient High-Fidelity Representation: Harmonic-line Spectrum Perspective">
+  <meta name="citation_author" content="Cho, Hyunmin">
+  <meta name="citation_author" content="Yoo, Jaejun">
+  <meta name="citation_author" content="Jin, Kyong Hwan">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="citation_conference_title" content="ECCV">
+
+  <meta name="theme-color" content="#17357a">
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+  <title>Recurrent Sinusoidal INR | ECCV 2026</title>
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+  <link rel="stylesheet" href="static/css/inter.css">
+  <link rel="preload" href="static/css/fontawesome.all.min.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="static/css/academicons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+    <link rel="stylesheet" href="static/css/academicons.min.css">
+  </noscript>
+
+  <script defer src="static/js/jquery.min.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script defer src="static/js/index.js"></script>
+
+  <!-- MathJax for inline math -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <style>
+    :root {
+      --ink: #17357a;
+      --accent: #0e7490;
+    }
+
+    .tldr-box {
+      background: #f5f7fb;
+      border-left: 4px solid var(--ink);
+      padding: 1.25rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 4px;
+    }
+
+    .tldr-box strong {
+      color: var(--ink);
+    }
+
+    .equation-box {
+      background: #fafbfc;
+      border: 1px solid #e5e8ee;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    .section-tight {
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+    }
+
+    .key-num {
+      color: var(--ink);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Result tables */
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 0.5rem 0 0.25rem;
+      background: #fff;
+    }
+
+    .result-table th,
+    .result-table td {
+      padding: 0.4rem 0.55rem;
+      text-align: right;
+      border-bottom: 1px solid #e5e8ee;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .result-table th:first-child,
+    .result-table td:first-child {
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .result-table thead th {
+      border-top: 2px solid var(--ink);
+      border-bottom: 1.5px solid var(--ink);
+      font-weight: 600;
+      background: #f5f7fb;
+      color: var(--ink);
+    }
+
+    .result-table tbody tr.ours-row {
+      background: #e9f6ee;
+    }
+
+    .result-table tbody tr.ours-row td {
+      font-weight: 600;
+    }
+
+    .result-table tbody tr:last-child td {
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .result-table td.txt,
+    .result-table th.txt {
+      text-align: left;
+    }
+
+    .delta-up {
+      color: #1f7a3c;
+      font-weight: 600;
+    }
+
+    .inf {
+      color: #1f7a3c;
+      font-weight: 700;
+    }
+
+    .yes {
+      color: #1f7a3c;
+      font-weight: 700;
+    }
+
+    .no {
+      color: #b32d2d;
+      font-weight: 700;
+    }
+
+    .trend-up {
+      color: #1f7a3c;
+      font-weight: 700;
+    }
+
+    .trend-flat {
+      color: #9a7b1a;
+      font-weight: 700;
+    }
+
+    .trend-down {
+      color: #b32d2d;
+      font-weight: 700;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin: 0.75rem 0;
+    }
+
+    .table-caption {
+      font-size: 0.82rem;
+      color: #666;
+      text-align: center;
+      margin: 0.35rem 0 1rem;
+      font-style: italic;
+    }
+
+    /* Figures */
+    .fig {
+      text-align: center;
+      margin: 1.25rem 0 0.5rem;
+    }
+
+    .fig img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+
+    .fig-caption,
+    .concept-caption {
+      font-size: 0.88rem;
+      color: #555;
+      margin-top: 0.6rem;
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <main id="main-content">
+
+    <!-- ============================== HERO ============================== -->
+    <section class="hero">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <div class="columns is-centered">
+            <div class="column has-text-centered">
+
+              <h1 class="title is-2 publication-title">Recurrent Sinusoidal INRs for Efficient High-Fidelity
+                Representation:<br><span style="color:#0e7490;">Harmonic-line Spectrum Perspective</span></h1>
+
+              <div class="is-size-5 publication-authors" style="margin-top: 1rem;">
+                <span class="author-block">
+                  <a href="https://hyeon-cho.github.io/" target="_blank">Hyunmin Cho</a><sup>1</sup>,</span>
+                <span class="author-block">
+                  <a href="https://sites.google.com/view/jaejunyoo" target="_blank">Jaejun Yoo</a><sup>2</sup>,</span>
+                <span class="author-block">
+                  <a href="https://ipa.korea.ac.kr/" target="_blank">Kyong Hwan Jin</a><sup>1&dagger;</sup></span>
+              </div>
+
+              <div class="is-size-6 publication-authors" style="margin-top: 0.4rem;">
+                <span class="author-block"><sup>1</sup>Department of Electrical Engineering, Korea University, Seoul,
+                  South Korea</span>
+                <br>
+                <span class="author-block"><sup>2</sup>Graduate School of Artificial Intelligence, UNIST, Ulsan, South
+                  Korea</span>
+                <br>
+                <span class="eql-cntrb"><small><sup>&dagger;</sup>Corresponding author</small></span>
+              </div>
+
+              <div class="is-size-5" style="margin-top: 0.6rem; color: #555;">
+                <strong>ECCV 2026</strong>
+              </div>
+
+              <div class="column has-text-centered" style="margin-top: 1rem;">
+                <div class="publication-links">
+
+                  <span class="link-block">
+                    <a href="#"
+                      class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                      <span>Paper (soon)</span>
+                    </a>
+                  </span>
+
+                  <span class="link-block">
+                    <a href="https://github.com/hyeon-cho/Harmonic-line-Spectrum" target="_blank"
+                      class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon"><i class="fab fa-github"></i></span>
+                      <span>Code</span>
+                    </a>
+                  </span>
+
+                  <span class="link-block">
+                    <a href="#BibTeX" class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon"><i class="ai ai-google-scholar"></i></span>
+                      <span>BibTeX</span>
+                    </a>
+                  </span>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== ABSTRACT ============================== -->
+    <section class="section hero is-light section-tight">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered has-text-centered">
+          <div class="column is-four-fifths">
+            <h2 class="title is-3">Abstract</h2>
+            <div class="content has-text-justified">
+              <p>
+                Implicit neural representations (INRs) often improve fidelity by increasing depth or
+                multiresolution parameters, which raises model size and compute. We study a different approach:
+                <strong>iterative latent refinement with a shared sinusoidal block under a fixed parameter
+                  budget</strong>. We show that sinusoidal activations induce a <strong>harmonic
+                  line-spectrum</strong>, which provides a spectral interpretation of why recurrent unrolling can
+                <em>enrich effective spectral support without increasing the number of parameters</em>. Based on
+                this perspective, we propose a recurrent sinusoidal INR and, in the quantized setting, combine it
+                with bipolar code-space supervision for exact discrete reconstruction. On RGB image benchmarks, our
+                method reaches substantially higher fidelity than feed-forward baselines with fewer parameters and
+                fewer optimization steps. The proposed method transfers favorably to super-resolution, NeRF, and SDF
+                tasks. These results suggest recurrence as a simple and modular alternative to increasing
+                independently parameterized depth in INRs.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== TL;DR ============================== -->
+    <section class="section section-tight">
+      <div class="container is-max-desktop">
+        <div class="tldr-box">
+          <strong>TL;DR&nbsp;—</strong> Instead of adding independently parameterized depth, we
+          <strong>reuse a single sinusoidal block recurrently</strong>, refining the latent state for a few steps.
+          Why it works is spectral: by the Jacobi&ndash;Anger identity every sine step <strong>creates new spectral
+            lines</strong> at integer combinations of existing frequencies, so <strong>recurrent unrolling keeps
+            enriching the reachable spectrum with no extra parameters</strong>. We verify this directly — sinusoidal
+          recurrence grows spectral support <span class="key-num">30.9% → 94.6%</span> across steps, while a
+          contractive iterative-SIREN saturates and non-sinusoidal recurrence collapses. The payoff: under a fixed
+          parameter budget, <strong>each added recurrent step keeps raising fidelity</strong> — a compact, modular
+          alternative to stacking independently parameterized depth.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== WHY ============================== -->
+    <section class="section section-tight">
+      <div class="container is-max-desktop content">
+        <h2 class="title is-3">Why? &mdash; Fidelity Without More Parameters</h2>
+        <p>
+          Coordinate-based INRs suffer from <strong>spectral bias</strong>: they fit low-frequency structure
+          readily but recover fine, high-frequency detail only slowly. The usual fixes — deeper networks,
+          multiresolution grids, richer encodings — buy fidelity by <em>spending parameters, memory, and
+            optimization steps</em>.
+        </p>
+        <p>
+          It helps to read an INR as three stages,
+        </p>
+        <div class="equation-box has-text-centered">
+          $\mathbf{s} \;=\; \mathcal{D}\!\big(\mathcal{F}(\mathcal{E}(\mathbf{x}))\big),$
+        </div>
+        <p>
+          where $\mathcal{E}$ lifts coordinates into a higher-dimensional embedding, $\mathcal{F}$ transforms it
+          into a latent feature, and $\mathcal{D}$ maps that feature to the output. The key difficulty is not only
+          <em>how coordinates are encoded</em>, but whether the latent state can be <em>refined enough</em> to
+          capture fine-scale structure under a fixed budget. This motivates our central question:
+        </p>
+        <blockquote>
+          Can high-frequency reconstruction be improved by <strong>repeatedly refining an internal latent
+            state</strong> while <strong>reusing a compact set of parameters</strong> — rather than adding
+          independently parameterized depth?
+        </blockquote>
+        <p>
+          Recurrence is a natural mechanism: unrolling a weight-tied update for $R$ steps increases
+          <em>effective</em> depth while reusing the same weights, and can be read as a learned iterative
+          refinement algorithm. The question is <em>why</em> this should help a sinusoidal INR. The answer is
+          spectral.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================== HARMONIC LINE-SPECTRUM (theory) ============================== -->
+    <section class="section hero is-light section-tight">
+      <div class="container is-max-desktop content">
+        <h2 class="title is-3">Sinusoidal Layers Induce a Harmonic Line-Spectrum</h2>
+        <p>
+          <strong>The encoder is a learnable Fourier feature map.</strong> Following SIREN, the sinusoidal lifting
+        </p>
+        <div class="equation-box has-text-centered">
+          $\mathbf{h}_0(\mathbf{x}) = \sin\!\big(\omega_{\mathrm{in}}\mathbf{W}_{\mathrm{in}}\mathbf{x} +
+          \mathbf{b}_{\mathrm{in}}\big),
+          \qquad [\mathbf{h}_0(\mathbf{x})]_i = \sin\!\big(\boldsymbol{\Omega}_i^{\!\top}\mathbf{x}+\phi_i\big)$
+        </div>
+        <p>
+          maps coordinates to a set of sinusoidal bases with <em>learnable</em> frequencies
+          $\boldsymbol{\Omega}_i=\omega_{\mathrm{in}}\mathbf{w}_i$ and phases $\phi_i$; the bandwidth scalar
+          $\omega_{\mathrm{in}}$ sets the overall frequency scale. Empirically, raising $\omega_{\mathrm{in}}$
+          consistently improves high-pass reconstruction at every training stage (e.g.,
+          <span class="key-num">23.51&nbsp;→&nbsp;36.45&nbsp;dB</span> at just 200 iterations).
+        </p>
+        <p>
+          <strong>A hidden sine layer creates new frequencies.</strong> Feed the multi-tone code
+          $u_j(\mathbf{x}) = \beta_j + \sum_i \alpha_{j,i}\sin(\theta_i(\mathbf{x}))$ through another sine. By the
+          Jacobi&ndash;Anger expansion,
+        </p>
+        <div class="equation-box has-text-centered">
+          $\sin\!\big(u_j(\mathbf{x})\big) = \sum_{\mathbf{k}\in\mathbb{Z}^m} c_{j,\mathbf{k}}\,
+          \sin\!\Big(\beta_j + \sum_{i} k_i\,\theta_i(\mathbf{x})\Big),
+          \qquad c_{j,\mathbf{k}} = \prod_i J_{k_i}(\alpha_{j,i}),$
+        </div>
+        <p>
+          so the layer emits spectral lines at <strong>integer combinations</strong> of the encoder frequencies,
+          $\boldsymbol{\Omega}' = \sum_i k_i\,\boldsymbol{\Omega}_i$ — sums, differences, and higher-order
+          harmonics — rather than merely reweighting existing ones. Stacking (or <em>unrolling</em>) sine layers
+          therefore drives a progressive <strong>harmonic enrichment</strong> of the reachable spectrum:
+        </p>
+        <div class="equation-box has-text-centered">
+          $\Omega^{(\ell+1)} \subseteq \operatorname{span}_{\mathbb{Z}}\big(\Omega^{(\ell)}\big).$
+        </div>
+        <p>
+          This is the crux: because each shared application of a sine block <em>expands</em> the effective spectral
+          support, <strong>recurrent unrolling buys harmonic richness for free</strong> under a fixed parameter
+          count — the architectural counterpart of adding depth. We measure this prediction directly on the
+          network's own activations, next.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================== VALIDATING (spectral harmonics experiment) ============================== -->
+    <section class="section section-tight" id="spectral">
+      <div class="container is-max-desktop content">
+        <h2 class="title is-3">Validating the Harmonic Line-Spectrum</h2>
+        <p>
+          The theory makes a sharp, falsifiable claim: each shared sinusoidal step should add spectral lines at
+          <em>integer combinations</em> of existing frequencies, so the reachable spectrum should <strong>broaden
+            with every recurrent step</strong>. We measure this directly on the network's own hidden activations.
+        </p>
+
+        <h4 class="title is-5">What we measure</h4>
+        <p>
+          On a regular $H\times H$ coordinate grid we forward each network and capture the hidden state at every
+          recurrent / depth index $\ell$, $\;\mathbf{h}^{(\ell)} =
+          \sigma\!\big(\omega\,W^{(\mathrm{rec})}\mathbf{h}^{(\ell-1)}\big)$. We take its per-channel 2D DFT, then
+          channel-average and peak-normalize the magnitude in dB,
+        </p>
+        <div class="equation-box has-text-centered">
+          $M_\ell^{\mathrm{dB}}[u,v] = 20\log_{10}\dfrac{(1/C)\sum_c \big|\mathbf{F}_c^{(\ell)}[u,v]\big|}
+          {\max_{u',v'}(\,\cdot\,)},$
+        </div>
+        <p>
+          and read off two scalars per step — one for <em>breadth</em>, one for <em>high-frequency strength</em>:
+        </p>
+        <div class="equation-box has-text-centered">
+          $\underbrace{S_\ell^\tau = H^{-2}\,\big|\{(u,v): M_\ell^{\mathrm{dB}}[u,v] > \tau\}\big|}_{\textbf{spectral
+          support (breadth)}}
+          \qquad
+          \underbrace{\mathrm{HF}_\ell = \tfrac{1}{|\mathcal{U}|}\sum_{k\in\mathcal{U}} \dfrac{R_\ell(k)}{R_\ell(0)}}
+          _{\textbf{radial HF content},\ \ \mathcal{U}=\{H/4,\dots,H/2-1\}}$
+        </div>
+        <p>
+          where $R_\ell(k)$ is the radial profile of $M_\ell$ at radius $k$ from DC. Intuitively, $S_\ell^\tau$ counts
+          how many frequency bins are <em>active</em>, and $\mathrm{HF}_\ell$ measures how much energy lives in the
+          upper (Nyquist) half of the spectrum.
+        </p>
+
+        <h4 class="title is-5" style="margin-top:1.4rem;">What we find</h4>
+        <p>
+          Evaluated across $\ell = 1\!\to\!8$, the three recurrence regimes behave completely differently — and
+          exactly as the harmonic-line-spectrum view predicts:
+        </p>
+
+        <div class="table-wrap">
+          <table class="result-table">
+            <thead>
+              <tr>
+                <th class="txt">Recurrence regime</th>
+                <th class="txt">Mechanism</th>
+                <th>Spectral support&nbsp;$S_\ell$<br>($\ell{=}1 \to \ell{=}8$)</th>
+                <th>Radial&nbsp;HF$_\ell$</th>
+                <th>Exact fit<br>(BER&nbsp;=&nbsp;0)?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="ours-row">
+                <td class="txt">Sinusoidal, weight-tied <strong>(Ours)</strong></td>
+                <td class="txt">integer-combination closure $\Omega^{(\ell+1)}\!\subseteq\!\operatorname{span}_{\mathbb{Z}}\Omega^{(\ell)}$</td>
+                <td>30.9% → <span class="key-num">94.6%</span> <span class="trend-up">↑ monotone</span></td>
+                <td><span class="trend-up">grows ↑</span></td>
+                <td><span class="yes">✓</span> (∞ dB)</td>
+              </tr>
+              <tr>
+                <td class="txt">Iterative SIREN, fixed-point <em>(iSIREN)</em></td>
+                <td class="txt">contractive equilibrium $z^\star = F_\theta(z^\star,\mathbf{x})$</td>
+                <td>33.5% → 33.5% <span class="trend-flat">→ saturates</span></td>
+                <td>0.008 <span class="trend-flat">→ flat</span></td>
+                <td><span class="no">✗</span> (≤ 47.16 dB)</td>
+              </tr>
+              <tr>
+                <td class="txt">Non-sinusoidal recurrence</td>
+                <td class="txt">no harmonic-generation mechanism</td>
+                <td><span class="trend-down">collapses ↓</span></td>
+                <td><span class="trend-down">↓</span></td>
+                <td><span class="no">✗</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-caption">
+          Spectral support $S_\ell^\tau$ and radial HF$_\ell$ of hidden activations across recurrent / depth steps
+          (random initialization). Endpoint values are reported; arrows summarize the trend over $\ell$.
+        </p>
+
+        <ul>
+          <li>
+            <strong>Sinusoidal recurrence (Ours) enriches the spectrum monotonically</strong> — spectral support
+            climbs <span class="key-num">30.9% → 94.6%</span> as steps accumulate, precisely the integer-combination
+            closure the Jacobi&ndash;Anger expansion predicts. More steps ⇒ broader support ⇒ more reachable high
+            frequencies, all at a fixed parameter count.
+          </li>
+          <li>
+            <strong>Fixed-point iterative SIREN saturates.</strong> An input-injected, contractive recurrence
+            converges to a single equilibrium $z^\star$, so its spectrum stops changing after roughly one iteration
+            (support flat at 33.5%, HF flat at 0.008) — capping fidelity well short of exact (≤&nbsp;47.16&nbsp;dB,
+            never BER&nbsp;=&nbsp;0).
+          </li>
+          <li>
+            <strong>Non-sinusoidal recurrence collapses.</strong> Without a sine nonlinearity there is no mechanism
+            to generate new harmonics, so repeated application <em>shrinks</em> rather than enriches the support.
+          </li>
+        </ul>
+        <p>
+          The experiment cleanly separates <em>sinusoidal growth</em> from <em>recurrent collapse</em>: it is the
+          combination of (i) a sinusoidal nonlinearity and (ii) explicit finite unrolling — not recurrence alone —
+          that expands effective spectral support. This is the spectral mechanism that turns extra recurrent steps
+          into fidelity gains, and explains why our finite, non-contractive unrolling can reach exact reconstruction
+          that equilibrium-style recurrence cannot.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================== METHOD ============================== -->
+    <section class="section hero is-light section-tight">
+      <div class="container is-max-desktop content">
+        <h2 class="title is-3">Method: Recurrent Sinusoidal INR</h2>
+        <p>
+          We instantiate $\mathcal{F}$ as a <strong>single shared sinusoidal block</strong> and iteratively refine
+          the latent state. Given a coordinate $\boldsymbol{x}$, we initialize with a sinusoidal projection and
+          refine for $R$ recurrent steps with a weight-tied transformation, then read out:
+        </p>
+        <div class="equation-box has-text-centered">
+          $\mathbf{h}^{(0)} = \sigma\!\big(W^{(\mathrm{in})}\boldsymbol{x}\big),\qquad
+          \mathbf{h}^{(r)} = \sigma\!\big(W^{(\mathrm{rec})}\mathbf{h}^{(r-1)}\big),\quad r=1,\dots,R,\qquad
+          \hat{\mathbf{c}} = W^{(\mathrm{out})}\mathbf{h}^{(R)}.$
+        </div>
+        <p>
+          $W^{(\mathrm{in})},W^{(\mathrm{rec})},W^{(\mathrm{out})}$ are bias-free linear maps (for stability under
+          unrolling), with the <strong>recurrent map $W^{(\mathrm{rec})}$ shared across all steps</strong>, and
+          $\sigma(\cdot)$ the elementwise sine. Each application expands harmonic interactions while preserving the
+          parameter count. Crucially, the block has <em>no coordinate re-injection</em> and is run for a finite
+          $R$ — an explicit unrolling, not a contractive fixed-point solve.
+        </p>
+
+        <div class="fig">
+          <img src="static/images/pipeline.png"
+            alt="Feed-forward vs. recurrent INRs under a fixed parameter budget: a depthwise feed-forward INR with non-shared weights vs. our recursive INR reusing a shared block, with an optional quantization & bipolar code path." />
+        </div>
+        <p class="concept-caption">
+          <strong>Feed-forward vs. recurrent INRs under a fixed parameter budget.</strong>
+          <strong>(a)</strong> A depthwise feed-forward INR maps coordinates to RGB with non-shared weights
+          ($\theta_1\!\neq\!\theta_2\!\neq\!\dots$) in FP32. <strong>(b)</strong> Our recurrent INR reuses a single
+          shared module ($\theta_1\!=\!\theta_2\!=\!\dots$), unrolling it for $T$ steps with backpropagation through
+          time. <strong>(c)</strong> Optionally, a threshold/sign operator $\mathcal{T}$ and inverse bipolar map
+          $\mathcal{B}^{-1}$ convert the bipolar output into exact UINT8 values.
+        </p>
+
+        <h4 class="title is-5" style="margin-top:1.5rem;">Optional: bipolar code-space supervision (quantized setting)</h4>
+        <p>
+          For lossless fitting we can supervise in a <em>binarized code space</em> rather than regressing
+          intensities. The quantized target $y_p\in\{0,\dots,2^B-1\}$ becomes a zero-centered bipolar codeword via a
+          $B$-bit Gray encoder $\Gamma$,
+        </p>
+        <div class="equation-box has-text-centered">
+          $\mathbf{c}_p = 2\,\Gamma(y_p) - 1 \in \{-1,+1\}^B,\qquad
+          \mathcal{L}_{\mathrm{align}} = \frac{1}{|\mathcal{P}|}\sum_{p\in\mathcal{P}}
+          \frac{\hat{\mathbf{c}}_p^{\top}\mathbf{c}_p}{\|\hat{\mathbf{c}}_p\|_2\,\|\mathbf{c}_p\|_2}.$
+        </div>
+        <p>
+          Bipolar codewords are zero-centered (matching the symmetric range of sine) and share a constant norm, so
+          training reduces to a single <strong>cosine-alignment</strong> objective; Gray coding keeps neighboring
+          quantization levels one bit apart. This is an optional add-on for the quantized regime — the fidelity
+          gains come from recurrence itself.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================== RECURRENCE ENRICHES FIDELITY (Table 2) ============================== -->
+    <section class="section section-tight">
+      <div class="container is-max-desktop content">
+        <h2 class="title is-3">More Recurrence &rArr; Higher Fidelity, Same Parameters</h2>
+        <p>
+          The spectral prediction is directly testable in fidelity, too: at a fixed optimization step and a
+          <strong>fixed 593.7K parameters</strong>, simply unrolling the shared block for more steps monotonically
+          improves reconstruction — a <span class="key-num">+23.7&nbsp;dB</span> swing from feed-forward to $R{=}5$
+          at step 500.
+        </p>
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th>#Recurrent steps</th>
+              <th>Feed-forward</th>
+              <th>$R{=}2$</th>
+              <th>$R{=}3$</th>
+              <th>$R{=}4$</th>
+              <th>$R{=}5$</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PSNR (dB) @ step 500</td>
+              <td>39.72</td>
+              <td>46.36 <span class="delta-up">+6.6</span></td>
+              <td>54.77 <span class="delta-up">+15.0</span></td>
+              <td>60.84 <span class="delta-up">+21.1</span></td>
+              <td class="inf">63.38 <span class="delta-up">+23.7</span></td>
+            </tr>
+            <tr>
+              <td>#Param.</td>
+              <td>593.7K</td>
+              <td>593.7K</td>
+              <td>593.7K</td>
+              <td>593.7K</td>
+              <td>593.7K</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="table-caption">
+          Reconstruction quality at optimization step 500 vs. number of recurrent unrolling steps. $\Delta$ is the
+          PSNR gain over the feed-forward (single-pass) baseline. Parameter count is identical across columns.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================== TAKEAWAYS ============================== -->
+    <section class="section hero is-light section-tight">
+      <div class="container is-max-desktop content">
+        <h2 class="title is-3">Takeaways</h2>
+        <ul>
+          <li><strong>Recurrence ≈ depth, for free.</strong> A shared sinusoidal block, unrolled, enriches the
+            harmonic line-spectrum without adding parameters — a spectral reason recurrence helps INRs.</li>
+          <li><strong>Mechanism, verified.</strong> Direct DFT measurement confirms sinusoidal recurrence grows the
+            spectral support (30.9% → 94.6%), separating it from contractive iterative-SIREN (saturates) and
+            non-sinusoidal recurrence (collapses).</li>
+          <li><strong>More steps, more fidelity.</strong> Under a fixed parameter budget, each added recurrent step
+            keeps raising reconstruction quality (+23.7&nbsp;dB at $R{=}5$).</li>
+          <li><strong>Lossless when you want it.</strong> As an optional add-on for quantized signals, bipolar
+            Gray-coded supervision additionally yields exact (zero-bit-error) reconstruction — but the fidelity
+            gains come from <em>recurrence</em> itself.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================== BIBTEX ============================== -->
+    <section class="section" id="BibTeX">
+      <div class="container is-max-desktop content">
+        <div class="bibtex-header" style="display:flex; align-items:center; gap:0.75rem;">
+          <h2 class="title" style="margin-bottom:0;">BibTeX</h2>
+          <button class="copy-bibtex-btn button is-small" onclick="copyBibTeX()" title="Copy BibTeX to clipboard">
+            <span class="icon"><i class="fas fa-copy"></i></span>
+            <span class="copy-text">Copy</span>
+          </button>
+        </div>
+        <pre id="bibtex-code"><code>@inproceedings{
+          coming soon...
+}</code></pre>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p>
+              This page was built using the
+              <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project
+                Page Template</a>,
+              adapted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+              You are free to borrow the source of this site; please link back to this page in the footer.
+              This website is licensed under a
+              <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons
+                Attribution-ShareAlike 4.0 International License</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function copyBibTeX() {
+      const code = document.getElementById('bibtex-code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-bibtex-btn .copy-text');
+        if (!btn) return;
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = orig; }, 1500);
+      });
+    }
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    window.addEventListener('scroll', () => {
+      const btn = document.querySelector('.scroll-to-top');
+      if (!btn) return;
+      btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+    });
+  </script>
+
+</body>
+
+</html>

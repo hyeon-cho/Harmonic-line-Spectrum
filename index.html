@@ -403,6 +403,18 @@
                 <div class="publication-links">
 
                   <span class="link-block">
+                    <a href="https://link.springer.com/chapter/10.1007/978-3-032-37574-2_22"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                        <i class="ai ai-springer" aria-hidden="true"></i>
+                      </span>
+                      <span>Springer Nature</span>
+                    </a>
+                  </span>
+
+                  <span class="link-block">
                     <a href="https://arxiv.org/pdf/2607.21485"
                       class="external-link button is-normal is-rounded is-dark">
                       <span class="icon"><i class="fas fa-file-pdf"></i></span>
@@ -423,14 +435,6 @@
                       class="external-link button is-normal is-rounded is-dark">
                       <span class="icon">🤗</span>
                       <span>Huggingface</span>
-                    </a>
-                  </span>
-
-                  <span class="link-block">
-                    <a href="https://eccv.ecva.net/virtual/2026/poster/5714" target="_blank"
-                      class="external-link button is-normal is-rounded is-dark">
-                      <span class="icon"><i class="fas fas fa-chalkboard"></i></span>
-                      <span>Poster (ECVA)</span>
                     </a>
                   </span>
                   
@@ -845,13 +849,24 @@
           </button>
         </div>
         <pre id="bibtex-code"><code>
-@InProceedings{cho2026recurrent,
+@InProceedings{10.1007/978-3-032-37574-2_22,
 author="Cho, Hyunmin
 and Yoo, Jaejun
 and Jin, Kyong Hwan",
-title="Recurrent Sinusoidal INRs for Efficient High-Fidelity Representation",
+editor="Favaro, Paolo
+and Kukelova, Zuzana
+and Maki, Atsuto
+and Rohrbach, Anna
+and Schindler, Konrad
+and Tombari, Federico",
+title="Recurrent Sinusoidal INRs for Efficient High-Fidelity Representation",
 booktitle="Computer Vision -- ECCV 2026",
 year="2026",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="385--403",
+abstract="We study sinusoidal recurrence as an iterative mechanism for harmonic spectral enrichment in implicit neural representations (INRs). Our analysis reveals that sinusoidal activations induce a harmonic line spectrum, providing a spectral account of how recurrent unrolling enriches the effective spectral support. We realize this principle with a shared sinusoidal block that iteratively refines the latent representation. We empirically validate the resulting spectral behavior against feed-forward INRs, non-sinusoidal recurrent variants, and equilibrium-style sinusoidal models. Complementing this analysis, we evaluate the proposed architecture across image and 3D representation tasks. On RGB image benchmarks, our method achieves higher fidelity than feed-forward baselines with fewer parameters and fewer optimization steps, and it further transfers favorably to super-resolution, NeRF, and SDF tasks.",
+isbn="978-3-032-37574-2"
 }
         </code></pre>
       </div>

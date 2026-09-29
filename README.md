@@ -18,13 +18,12 @@ code-space supervision appears as an optional add-on for exact quantized reconst
 
 ```
 project_page/
-├── index.html                      # self-contained page (Bulma + MathJax)
+├── index.html                      # semantic single-page project site + MathJax
 ├── .nojekyll                       # disable Jekyll on GitHub Pages
 └── static/
-    ├── css/                        # bulma, fontawesome, academicons, inter, index.css
-    ├── js/                         # jquery, fontawesome, index.js
-    ├── fonts/  webfonts/           # icon + Inter fonts
-    └── images/                     # pipeline.png (method figure)
+    ├── css/                        # shared liquid-glass design system + local Inter fonts
+    ├── js/                         # navigation lens and BibTeX interaction
+    └── images/                     # overview and method figures
 ```
 
 ## Viewing locally
